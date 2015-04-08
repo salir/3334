@@ -16,6 +16,8 @@ module Github
 
   LIBDIR = File.expand_path("../#{LIBNAME}", __FILE__)
 
+ #1Agregado en master commit 1
+
   class << self
     def included(base)
       base.extend ClassMethods

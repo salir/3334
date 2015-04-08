@@ -10,6 +10,7 @@ require 'github_api/core_ext/ordered_hash'
 require 'github_api/ext/faraday'
 require 'github_api/middleware'
 
+#1Agregado en commit 2 diff2 para ser borrada
 module Github
   LIBNAME = 'github_api'
 
@@ -22,8 +23,6 @@ module Github
       base.extend ClassMethods
     end
 
-    # Alias for Github::Client.new
-    #
     # @param [Hash] options
     #   the configuration options
     #

@@ -34,6 +34,14 @@ module Github
       Client.new(options, &block)
     end
 
+    # @return [Proc]
+    #
+    #1Comentario en commit 1 diff2
+    #2Comentario en commit 1 diff2
+    # @api private
+    def default_middleware(options = {})
+      Middleware.default(options)
+    end
 
     # Delegate to Github::Client
     #
@@ -80,9 +88,6 @@ module Github
       @configuration ||= Configuration.new
     end
 
-    # Configure options
-    #
-    # @example
     #   Github.configure do |c|
     #     c.some_option = true
     #   end
@@ -98,6 +103,7 @@ module Github
       yield configuration
     end
   end
+  #3Comentario en commit 1 diff2
 
   extend ClassMethods
 

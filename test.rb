@@ -15,6 +15,8 @@ module Github
 
   LIBDIR = File.expand_path("../#{LIBNAME}", __FILE__)
 
+ #1Agregado en master commit 1
+
   class << self
     def included(base)
       base.extend ClassMethods
@@ -32,15 +34,6 @@ module Github
       Client.new(options, &block)
     end
 
-    # Default middleware stack that uses default adapter as specified
-    # by configuration setup
-    #
-    # @return [Proc]
-    #
-    # @api private
-    def default_middleware(options = {})
-      Middleware.default(options)
-    end
 
     # Delegate to Github::Client
     #

@@ -10,7 +10,6 @@ require 'github_api/core_ext/ordered_hash'
 require 'github_api/ext/faraday'
 require 'github_api/middleware'
 
-#1Agregado en commit 2 diff2 para ser borrada
 module Github
   LIBNAME = 'github_api'
 
@@ -63,6 +62,7 @@ module Github
   end
 
   module ClassMethods
+  #1Agregado en commit 3 diff2
 
     # Requires internal libraries
     #
@@ -91,8 +91,7 @@ module Github
     #     c.some_option = true
     #   end
     #
-    # @yield the configuration block
-    # @yieldparam configuration [Github::Configuration]
+    #2 Agregado en commit 3 diff2
     #   the configuration instance
     #
     # @return [nil]

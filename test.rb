@@ -1,9 +1,9 @@
 require 'pp' if ENV['DEBUG']
 require 'faraday'
 require 'github_api/version'
-require 'github_api/configuration'
-require 'github_api/constants'
-require 'github_api/utils/url'
+require 'github_api/onfiguration'
+require 'github_api/onstants'
+require 'github_api/tils/url'
 require 'github_api/connection'
 require 'github_api/deprecation'
 require 'github_api/core_ext/ordered_hash'

@@ -1,3 +1,4 @@
+aa
 require 'pp' if ENV['DEBUG']
 require 'faraday'
 require 'github_api/version'

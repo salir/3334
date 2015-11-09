@@ -1,0 +1,10 @@
+{ "licenses" :
+  [
+    { "type": "MIT"
+    , "url": "http://www.opensource.org/licenses/mit-license.php"
+    }
+  , { "type": "Apache-2.0"
+    , "url": "http://opensource.org/licenses/apache2.0.php"
+    }
+  ]
+}

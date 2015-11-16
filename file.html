@@ -1,0 +1,328 @@
+<div class="commit" ng-class="gcIf(hide_comments,'hide-comments')">
+<div class="clearfix">
+  <div class="show-comments-container">
+    <button type="button" class="btn btn-primary btn-xs"
+      gc-tooltip="{{gcIf(hide_comments,'Show','Hide')}} all comments"
+      observe="true"
+      ng-click="hide_comments = !hide_comments">
+      <span class="ico" ng-class="hide_comments ? 'hide-comments' : 'show-comments'"></span>
+    </button>
+  </div>
+  <br />
+  <div id="file_{{file_index}}" class="file-container" ng-class="fileClass(file)" ng-repeat="file in commit.files" ng-init="file_index = $index;file.$hide=file.deleted" class="clearfix">
+    <div class="row">
+      <div class="col-sm-12">
+
+        <div class="file" ng-class="{'collapsed': file.$hide, 'deleted': file.deleted}" gc-tooltip="{{file.deleted ? 'This file was deleted.' : file.path}}" data-placement="top">
+          <div class="file-name"> {{file.path}} <span gc-skills="file.skills"></span>
+            <a
+            ng-if="file.diff.length &amp;&amp; !file.deleted " ng-click="openFileDiff(file)" class="btn btn-default"
+            gc-tooltip="View the whole file">File</a>
+            <a ng-show="file.$hide" ng-click="file.$hide=false" class="btn btn-default" gc-tooltip="Expand file"><i class="fa fa-expand"></i></a>
+            <a ng-hide="file.$hide" ng-click="file.$hide=true" class="btn btn-default" gc-tooltip="Collapse file"><i class="fa fa-compress"></i></a>
+            <span class="pull-right smll">
+            <span class="red" gc-tooltip="{{file.deletions}} lines deleted">- {{file.deletions}}</span> &nbsp; <span class="green" gc-tooltip="{{file.additions}} lines added">+ {{file.additions}}</span> &nbsp;
+          </span>
+
+          </div>
+          <!--div class="diff unavailable text-center" ng-if="!file.diff.length">Gitcolony considers that
+            this content is not relevant to be reviewed
+            </div-->
+          <table ng-hide="file.$hide" data-file="{{file_index}}" class="diff review" width="100%">
+            <tbody id="file{{file_index}}" ng-init="renderDiff(file_index)" data-file="{{file_index}}">
+              <!-- TODO: comment - estado: draft -->
+              <tr class="diff-line comment-line">
+                <td colspan="2" class="line text-center"><i class="fa fa-comment"></i> DRAFT</td>
+                <td colspan="3" class="text">
+                  <span class="relative"><img ng-class="avatarClass" class="avatar" style="max-width: 20px; max-height: 20px" src="https://gitcolony-staging.s3.amazonaws.com/uploads/user/avatar/2/avatar."> Acá va el avatar y todo lo mismo q en un comment estandar</span>
+                </td>
+              </tr>
+
+              <tr ng-click="comment.$compressed = !comment.$compressed" class="none diff-line" ng-class="{closed: comment.closed, 'comment-line': !comment.issue, 'issue-line': comment.issue}" ng-repeat="comment in file.comments" ng-hide="hide_comments" gc-comment>
+                <td class="line text-center" ng-if="comment.issue">
+                  <i ng-if="!comment.closed" class="fa fa-warning" gc-tooltip="There's an issue linked to this line."></i>
+                  <span ng-if="comment.closed"><i class="fa fa-warning green" gc-tooltip="This issue is already closed"></i> <i class="fa fa-check-circle sm green"></i></span>
+                </td>
+                <td class="line text-center" ng-if="!comment.issue">
+                  <span ng-if="!comment.closed" observe="true" gc-tooltip="There are {{comment.children.length+1}} comments linked to this line."><i class="fa fa-comment"></i> {{comment.children.length+1}}</span>
+                  <span ng-if="comment.closed" class="green" observe="true" gc-tooltip="This comment is already resolved"><i class="fa fa-comment"></i> <i class="fa fa-check-circle sm green"></i></span>
+                </td>
+                <td colspan="4" class="text">
+                  <div ng-class="{ 'comment-content clearfix': !comment.$compressed }">
+                    <div class="relative">
+                      <div ng-if="comment.issue">
+                        <span ng-if="!comment.blocker" class="tagg red sm" gc-tooltip="This is a non blocker issue: the PR can be merged even without fixing it.">NON BLOCKER</span>
+                        <span class="inline" gc-severity-class="comment.severity"></span>
+                        <span gc-user="comment.author" display="avatar username" size="20"></span>
+                        <span class="txt date" gc-date="comment.date" display="rel"></span>
+                        <span class="txt"><strong>{{comment.title}}</strong></span>
+                      </div>
+                      <div ng-if="!comment.issue">
+                        <span gc-user="comment.author" display="avatar username" size="20"></span>
+                        <span class="txt date" gc-date="comment.date" display="rel"></span>
+                        <span ng-if="comment.$compressed" class="comment-compressed">{{comment.ftext}}</span>
+                      </div>
+                      <div class="btn-edit" ng-click="$event.stopPropagation()">
+                        <ul role="tablist" class="nav nav-pills" ng-if="comment.issue">
+                          <li ng-if="!comment.closed">
+                            <div class="btn-group dropdown">
+                              <button ng-click="closeIssue(comment)" class="btn btn-danger btn-xxs" type="button">Close</button>
+                              <button ng-if="commit.issue_provider.resolutions.length" aria-expanded="true" aria-haspopup="true" class="btn btn-danger btn-xxs dropdown-toggle" type="button">
+                                <span class="caret"></span>
+                              </button>
+                              <ul ng-if="commit.issue_provider.resolutions.length" class="dropdown-menu dropdown-menu-right">
+                                <li><a>Select resolution and close issue:</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li ng-repeat="r in commit.issue_provider.resolutions" ng-click="closeIssue(comment,r.name)"><a>{{r.name}}</a></li>
+                              </ul>
+                            </div>
+                          </li>
+                          <li class="dropdown">
+                            <button class="btn btn-danger dropdown-toggle btn-xxs" type="button" aria-haspopup="true" aria-expanded="false" id="edit" gc-tooltip="More options">
+                              <i class="fa fa-cog"></i> &nbsp; <i class="fa fa-caret-down"></i>
+                            </button>
+                            <ul aria-labelledby="edit" role="menu" class="dropdown-menu dropdown-menu-right">
+                              <li><a ng-click="editComment(file_index, file, comment)">Edit</a></li>
+                              <li><a ng-click="deleteComment(comment)">Delete</a></li>
+                            </ul>
+                          </li>
+                          <li class="dropdown">
+                            &nbsp;
+                            <span ng-click="comment.$compressed=false;$event.stopPropagation()"><i ng-show="comment.$compressed" class="fa fa-expand space-top-xs" gc-tooltip="Expand conversation"></i></span>
+                            <span ng-click="comment.$compressed=true;$event.stopPropagation()"><i ng-hide="comment.$compressed" class="fa fa-compress space-top-xs" gc-tooltip="Compress conversation"></i></span>
+                          </li>
+                        </ul>
+                        <ul role="tablist" class="nav nav-pills" ng-if="!comment.issue" ng-click="$event.stopPropagation()">
+                          <li class="dropdown" ng-if="!comment.closed">
+                            <div class="btn-group">
+                              <button gc-tooltip="Mark as resolved and hide" ng-click="resolveComment(comment)" class="btn btn-secondary btn-xxs" type="button">Resolve</button>
+                            </div>
+                          </li>
+                          <li class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle btn-xxs" type="button" aria-haspopup="true" aria-expanded="false" id="edit" gc-tooltip="More options">
+                              <i class="fa fa-cog"></i> &nbsp; <i class="fa fa-caret-down"></i>
+                            </button>
+                            <ul aria-labelledby="edit" role="menu" class="dropdown-menu dropdown-menu-right">
+                              <li><a ng-click="editComment(file_index, file, comment)">Edit</a></li>
+                              <li><a ng-click="deleteComment(comment)">Delete</a></li>
+                            </ul>
+                          </li>
+                          <li class="dropdown">
+                            &nbsp;
+                            <span ng-click="comment.$compressed=false;$event.stopPropagation()"><i ng-show="comment.$compressed" class="fa fa-expand space-top-xs" gc-tooltip="Expand conversation"></i></span>
+                            <span ng-click="comment.$compressed=true;$event.stopPropagation()"><i ng-hide="comment.$compressed" class="fa fa-compress space-top-xs" gc-tooltip="Compress conversation"></i></span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <p gc-markdown="comment.ftext" ng-if="!comment.$compressed"></p>
+                  </div>
+                  <div ng-if="!comment.$compressed">
+                    <div class="comment-content clearfix" ng-repeat="reply in comment.children">
+                      <div class="relative">                      
+                        <span gc-user="reply.author" display="avatar username" size="20"></span>
+                        <span class="txt date" gc-date="reply.date" display="rel"></span>
+                        <div class="btn-edit" ng-click="$event.stopPropagation()">
+                          <ul role="tablist" class="nav nav-pills">
+                            <li class="dropdown" ng-if="!comment.closed">
+                              <button ng-class="comment.issue ? 'btn-danger' : 'btn-secondary'" class="btn btn-secondary dropdown-toggle btn-xxs" type="button" aria-haspopup="true" aria-expanded="false" id="edit" gc-tooltip="More options">
+                                <i class="fa fa-cog"></i> &nbsp; <i class="fa fa-caret-down"></i>
+                              </button>
+                              <ul aria-labelledby="edit" role="menu" class="dropdown-menu dropdown-menu-right">
+                                <li><a ng-click="editComment(file_index, file, reply, null, comment.offset)">Edit</a></li>
+                                <li><a ng-click="deleteComment(reply)">Delete</a></li>
+                              </ul>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+
+                      <p gc-markdown="reply.text"></p>
+                    </div>
+                  </div>
+                  <div class="reply-buttons" ng-if="!comment.$compressed" ng-click="$event.stopPropagation()">
+                    <a gc-tooltip="Like"><i class="fa fa-heart"></i></a> &nbsp; 
+                    <a gc-tooltip="Leave a comment" ng-click="showReply()" ng-class="comment.issue ? 'btn-danger' : 'btn-secondary'" class="btn btn-sm">Comment</a>
+                  </div>
+                </td>
+              </tr>
+              <tr class="hidden file-comment" ng-class="{issue: (file.new_comment.issue || file.reply_to.issue)}">
+                  <td class="line" ng-if="file.new_comment.$active">&nbsp; 
+                  </td>
+                  <td colspan="4" ng-if="file.new_comment.$active">
+                    <ul class="nav nav-tabs" role="tablist" id="myTab">
+                      <li role="presentation" ng-class="gcIf(file.new_comment.$tab=='edit', 'active')"><a ng-click="file.new_comment.$tab='edit'" aria-controls="write"
+                        role="tab" data-toggle="tab">Write</a>
+                      </li>
+                      <li role="presentation" ng-class="gcIf(file.new_comment.$tab=='preview', 'active')"><a  ng-click="file.new_comment.$tab='preview'" aria-controls="preview" role="tab"
+                        data-toggle="tab">Preview</a></li>
+                      <span class="pull-right sm space-top">
+                      <a ng-click="showFullScreen(file.new_comment)"><i class="fa fa-expand"></i> Edit in fullscreen</a> &nbsp;  &nbsp;
+                      </span>
+                    </ul>
+                    <!-- Tab panes -->
+                    <div class="tab-content">
+                      <div role="tabpanel" class="tab-pane active" ng-show="file.new_comment.$tab=='edit'">
+                        <form>
+                          <input ng-show="file.new_comment.issue" ng-model="file.new_comment.title" type="text" placeholder="Title" class="form-control">
+                          <br/>
+                          <textarea gc-textarea collabs="collabs" placeholder="Leave a comment"
+                              ng-model="file.new_comment.text" class="form-control"></textarea>
+                          <p class="sm">Attach images by dragging & dropping, or pasting from the
+                            clipboard. <a href="/markdown" target="_blank" class="pull-right "><i
+                              class="fa fa-file-code-o"></i> Markdown cheatsheet.</a>
+                          </p>
+                          <div class="text-right">
+                            <div ng-hide="file.editing || file.reply_to" class=" form-inline">
+                              <span gc-tooltip="Start a conversation with your collaborators about this line of code. This inline comment will be synchronized with GitHub too." data-placement="top">
+                                <label class="radio-inline">
+                                <input ng-model="file.new_comment.issue" type="radio" name="inlineRadioOptions" data-ng-value="false"> Standard comment
+                                </label>
+                              </span> &nbsp; &nbsp;
+                              <span gc-tooltip="Report an issue associated with this line of code. You can link it with your issue tracker, and with the story you're developing." data-placement="top">
+                                <label class="radio-inline">
+                                <input ng-model="file.new_comment.issue" type="radio" name="inlineRadioOptions" data-ng-value="true"> Issue
+                                </label>
+                              </span>
+                            </div>
+                            <div ng-if="file.new_comment.issue &amp;&amp; !file.editing &amp;&amp; !file.reply_to">
+                              <br />
+                            <div class="row form-small">
+                              <div class="col-sm-5">
+                                <div class="form-group" ng-if="commit.tasks.length">
+                                  <select ng-options="t.title for t in commit.tasks" class="form-control" ng-model="file.new_comment.parent">
+                                    <option value="">Associate issue with story (optional)</option>
+                                  </select>
+                                </div>
+                              </div>
+                                <div ng-if="!commit.tasks.length" class="col-sm-1"></div>
+                                <div ng-if="commit.tasks.length" class="col-sm-1 text-left" gc-tooltip="Report an issue associated with this line of code. You can link it with your issue tracker, and with the story you're developing." data-placement="top">
+                                  <i class="fa fa-question-circle light-blue lg space-top-xs"></i>
+                                </div>
+                                <div class="col-sm-6 nowrap pull-right">
+                                  <div class="form-inline">
+                                      <div class="form-group">
+                                        <label class="space-top-sm">Assign to:</label>
+                                      </div>
+
+                                      <div class="form-group">
+                                        <div class="btn-group btn-block">
+                                          <button class="btn btn-drop dropdown-toggle btn-block btn-xs" type="button" aria-haspopup="true" aria-expanded="false" data-toggle="dropdown" >
+                                          <span ng-hide="file.new_comment.assignee" class="small">Unassigned</span>
+                                          <span ng-show="file.new_comment.assignee" gc-user="file.new_comment.assignee" display="avatar username" size="small"></span> <span class="caret"></span>
+                                          </button>
+                                          <ul role="menu" class="dropdown-menu" aria-labelledby="dLabel">
+                                            <li ng-click="file.new_comment.assignee=null">
+                                              <a><span class="small">Unassigned</span></a>
+                                            </li>
+                                            <li ng-repeat="u in commit.issue_provider.users" ng-click="file.new_comment.assignee=u">
+                                              <a><span gc-user="u" display="avatar username" size="small"></span></a>
+                                            </li>
+                                          </ul>
+                                          </span>
+                                      </div>
+                                      </div>
+                                      <div class="form-group" ng-show="file.new_comment.issue">
+                                        <span gc-select="severities" value-attr="id" gc-model="file.new_comment.severity">
+                                          <i ng-class="$root.priorityClass(option.id)" class="inline"></i> <span  class="inline" style="vertical-align:top !important">{{option.name}}</span>
+                                        </span>
+                                      </div>
+                                    <div class="form-group">
+                                      <button ng-hide="!file.new_comment.issue || file.editing || file.reply_to" class="btn btn-default" gc-tooltip="Advanced settings" ng-click="file.new_comment.$advanced = !file.new_comment.$advanced"><i
+                                      class="fa fa-cog"></i></button>
+                                    </div>
+                                  </div>
+                                </div>
+                            </div>
+                            </div>
+                            <div ng-show="file.new_comment.$advanced &amp;&amp; file.new_comment.issue">
+                                <div class="row">
+                                  <div class="col-sm-6 text-right">
+                                      <label class="checkbox"> &nbsp;
+                                      <input type="checkbox" checked name="inlineRadioOptions" ng-model="file.new_comment.blocker" value="Mark this issue as blocker">
+                                      Mark this issue as blocker
+                                      </label>
+                                  </div>
+                                  <div class="col-sm-6">
+                                    <label class="checkbox"> &nbsp;  &nbsp;  &nbsp;
+                                    <input type="checkbox" checked name="inlineRadioOptions"
+                                      value="Sync this issue with your preferred issue tracker"
+                                      ng-model="file.new_comment.sync">
+                                    Sync this issue with your preferred issue tracker
+                                    </label>
+                                  </div>
+                              </div>
+                            </div>
+                            </div>
+                            <br/>
+                            <div class="btn-holder text-right">
+                              <button type="button" class="btn btn-default btn-sm" ng-click="hideComment(file_index)">
+                              Cancel
+                              </button>
+                              <button ng-hide="file.editing" type="button" class="btn btn-primary btn-sm"
+                                ng-click="saveComment(file_index, file)">Publish
+                              </button>
+                              <button ng-show="file.editing" type="button" class="btn btn-primary btn-sm"
+                                ng-click="updateComment(file_index, file)">Update
+                              </button>
+                            </div>
+                        </form>
+                        </div>
+                        <div role="tabpanel" class="tab-pane active" ng-show="file.new_comment.$tab=='preview'">
+                          <strong ng-show="file.new_comment.issue">{{file.new_comment.title}}</strong>
+                          <p gc-markdown="file.new_comment.text" class="ms-container"></p>
+                          <div class="btn-holder text-right">
+                            <button type="button" class="btn btn-default btn-sm" ng-click="hideComment(file_index)">
+                            Cancel
+                            </button>
+                            <button ng-hide="file.editing" type="button" class="btn btn-primary btn-sm"
+                              ng-click="saveComment(file_index, file)">Publish
+                            </button>
+                            <button ng-show="file.editing" type="button" class="btn btn-primary btn-sm"
+                              ng-click="updateComment(file_index, file)">Update
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                  </td>
+              </tr>
+            </tbody>
+          </table>
+          <!--TODO: este botón aparece cuando se seleccionan varias líneas de código. El estilo para resaltar las líneas seleccionadas queda por definir. Hay que agregar el class: "selected"
+            <button class="btn btn-primary">Add comment / issue to these lines</button>
+
+            <div class="comment-holder write clearfix text-right">
+
+            <div role="tabpanel">
+                <!-- Nav tabs -->
+          <!--</div>
+            </div>
+            </div>-->
+          <br ng-hide="file.$hide" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div ng-if="fullScreenComment" gc-gkeyup="$event.keyCode==27 &amp;&amp; showFullScreen(null)">
+  <div class="comment-backdrop" ng-click="showFullScreen(null)"></div>
+  <div class="edit-message">
+    <h2 ng-click="showFullScreen(null)"><!--a class="pull-right" gc-tooltip="Close full screen mode"><i class="fa fa-compress"></i></a--></h2>
+    <textarea gc-textarea ng-model="fullScreenComment.text" ng-click="$event.stopPropagation()" collabs="collabs"></textarea>
+  </div>
+</div>
+
+
+<div class="tuto-files">
+  <a gc-tutorial-button="files" model="tutoFiles"></a>
+  <div class="left" gc-tutorial-elem="files" title="Navigate your files!" model="tutoFiles">
+    <p>Now you can see al the files that changed and easily navigate them while you review your code. Moving between files is super easy now!</p>
+  </div>
+</div>
+<div class="files-list" gc-scroll-trap>
+  <ul>
+    <li ng-class="{active: $index==activeFile}" event=":Click file item" offset="92" ng-repeat="file in commit.files" gc-scroll="#file_{{$index}}"><a>{{file.name}} <span class="pull-right smll"><span class="red">- {{file.deletions}}</span> &nbsp; <span class="green">+ {{file.additions}}</span> &nbsp; </span></a></li>
+  </ul>
+</div>

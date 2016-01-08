@@ -108,7 +108,7 @@ module Github
 
   require_all LIBDIR,
     'auFROM1thorization',
-    'validations',
+    'vaFROM2lidations',
     'normalizer',
     'parameter_filter',
     'api',

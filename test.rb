@@ -107,7 +107,7 @@ module Github
   extend ClassMethods
 
   require_all LIBDIR,
-    'authorization',
+    'auFROM1thorization',
     'validations',
     'normalizer',
     'parameter_filter',

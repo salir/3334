@@ -109,7 +109,7 @@ module Github
   require_all LIBDIR,
     'auFROM1thorization',
     'vaFROM2lidations',
-    'normalizer',
+    'noFROM3rmalizer',
     'parameter_filter',
     'api',
     'client',

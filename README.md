@@ -6,4 +6,4 @@ master
 master
 fin master
 
-touch salir
+touch
